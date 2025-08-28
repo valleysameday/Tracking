@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Valley Same-Day Tracking</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fff8f0;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #ff7f11;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 2em;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    main {
+      padding: 20px;
+      text-align: center;
+    }
+    h2 {
+      color: #ff7f11;
+    }
+    .tracking-box {
+      max-width: 500px;
+      margin: 20px auto;
+      padding: 30px;
+      border: 2px solid #ff7f11;
+      border-radius: 10px;
+      background-color: #fff5e6;
+    }
+    input[type="text"] {
+      width: 80%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      padding: 10px 25px;
+      border: none;
+      background-color: #ff7f11;
+      color: white;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #e76a00;
+    }
+    #result {
+      margin-top: 20px;
+      text-align: left;
+    }
+    #map {
+      height: 400px;
+      width: 100%;
+      margin-top: 20px;
+      border: 2px solid #ff7f11;
+      border-radius: 10px;
+      display: none;
+    }
+    footer {
+      margin-top: 50px;
+      text-align: center;
+      font-size: 0.9em;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    Valley Same-Day Tracking
+  </header>
+  <main>
+    <h2>Track Your Delivery</h2>
+    <div class="tracking-box">
+      <p>Enter your tracking number below:</p>
+      <input type="text" placeholder="Tracking number" />
+      <br>
+      <button>Track</button>
+      <div id="result"></div>
+      <div id="map"></div>
+    </div>
+  </main>
+  <footer>
+    &copy; 2025 Valley Same-Day. All rights reserved.
+  </footer>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const button = document.querySelector('button');
+    const input = document.querySelector('input[type="text"]');
+    const resultDiv = document.getElementById('result');
+    const mapDiv = document.getElementById('map');
+    let map;
+    let marker;
+
+    button.addEventListener('click', async () => {
+      const ref = input.value.trim();
+      if (!ref) {
+        resultDiv.textContent = 'Please enter a tracking number.';
+        mapDiv.style.display = 'none';
+        return;
+      }
+
+      try {
+        // Updated backend URL
+        const response = await fetch(`https://api.valleysameday.com/api/track?ref=${ref}`);
+        const data = await response.json();
+
+        if (data.error) {
+          resultDiv.textContent = data.error;
+          mapDiv.style.display = 'none';
+          return;
+        }
+
+        // Display basic info
+        resultDiv.innerHTML = `
+          <p><strong>Name:</strong> ${data.name}</p>
+          <p><strong>Status:</strong> ${data.status}</p>
+        `;
+
+        // Show map if coordinates exist
+        if (data.position && data.position.latitude && data.position.longitude) {
+          const lat = data.position.latitude;
+          const lng = data.position.longitude;
+
+          mapDiv.style.display = 'block';
+
+          if (!map) {
+            map = L.map('map').setView([lat, lng], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+            marker = L.marker([lat, lng]).addTo(map)
+              .bindPopup(`${data.name}: ${data.status}`)
+              .openPopup();
+          } else {
+            map.setView([lat, lng], 15);
+            marker.setLatLng([lat, lng])
+              .setPopupContent(`${data.name}: ${data.status}`)
+              .openPopup();
+          }
+        } else {
+          mapDiv.style.display = 'none';
+        }
+
+      } catch (err) {
+        resultDiv.textContent = 'Failed to fetch tracking info.';
+        console.error(err);
+        mapDiv.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
