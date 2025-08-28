@@ -1,99 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Valley Same-Day POD Upload</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background-color: #fff8f0;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Valley Same-Day POD Upload</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fff8f0;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
 
-  .container {
-    background-color: #ffffff;
-    border: 2px solid #ff7f11;
-    border-radius: 10px;
-    padding: 30px;
-    margin: 40px 20px;
-    max-width: 500px;
-    width: 100%;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    position: relative;
-  }
+    .container {
+      background-color: #ffffff;
+      border: 2px solid #ff7f11;
+      border-radius: 10px;
+      padding: 30px;
+      margin: 40px 20px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      position: relative;
+    }
 
-  .container img.logo {
-    display: block;
-    margin: 0 auto 20px auto;
-    max-width: 150px;
-  }
+    .container img.logo {
+      display: block;
+      margin: 0 auto 20px auto;
+      max-width: 150px;
+    }
 
-  h2 {
-    color: #ff7f11;
-    text-align: center;
-    margin-bottom: 20px;
-  }
+    h2 {
+      color: #ff7f11;
+      text-align: center;
+      margin-bottom: 20px;
+    }
 
-  label {
-    display: block;
-    margin: 10px 0 5px 0;
-    font-weight: bold;
-  }
+    label {
+      display: block;
+      margin: 10px 0 5px 0;
+      font-weight: bold;
+    }
 
-  input[type="text"],
-  textarea,
-  input[type="file"] {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box;
-  }
+    input[type="text"],
+    textarea,
+    input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
 
-  textarea {
-    resize: vertical;
-  }
+    textarea {
+      resize: vertical;
+    }
 
-  button {
-    background-color: #ff7f11;
-    color: white;
-    font-weight: bold;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 15px;
-    font-size: 1em;
-  }
+    button {
+      background-color: #ff7f11;
+      color: white;
+      font-weight: bold;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 15px;
+      font-size: 1em;
+    }
 
-  button:hover {
-    background-color: #e76a00;
-  }
-
-  .thank-you {
-    display: none;
-    background-color: #dff0d8;
-    color: #3c763d;
-    padding: 15px;
-    border-radius: 5px;
-    margin-top: 15px;
-    text-align: center;
-    font-weight: bold;
-  }
-</style>
+    button:hover {
+      background-color: #e76a00;
+    }
+  </style>
 </head>
 <body>
 
 <div class="container">
-  <img src="logo.png" alt="Valley Same-Day Logo" class="logo">
-  <form name="pod-upload" id="pod-form" method="POST" data-netlify="true" enctype="multipart/form-data">
+  <img src="logo.png" alt="Valley Same-Day Logo" class="logo" />
+  <form name="pod-upload" method="POST" data-netlify="true" enctype="multipart/form-data" action="/thank-you">
     <h2>📦 Valley POD Upload</h2>
 
     <label>Job Reference</label>
@@ -111,36 +100,11 @@
     <input type="hidden" name="timestamp" id="timestamp" />
 
     <button type="submit">Submit POD</button>
-
-    <div class="thank-you" id="thank-you">
-      ✅ Thank you for your submission! — Valley Same-Day
-    </div>
   </form>
 </div>
 
 <script>
   document.getElementById("timestamp").value = new Date().toISOString();
-
-  const form = document.getElementById("pod-form");
-  const thankYou = document.getElementById("thank-you");
-
-  form.addEventListener("submit", function(event) {
-    event.preventDefault(); // prevent default form submission
-
-    // Simulate Netlify submission (or add real AJAX submission here)
-    const formData = new FormData(form);
-    fetch("/", {
-      method: "POST",
-      body: formData
-    }).then(() => {
-      thankYou.style.display = "block"; // show thank-you message
-      form.reset(); // reset form fields
-      document.getElementById("timestamp").value = new Date().toISOString();
-    }).catch((err) => {
-      alert("Submission failed. Please try again.");
-      console.error(err);
-    });
-  });
 </script>
 
 </body>
