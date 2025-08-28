@@ -29,13 +29,11 @@ input[type="file"] { margin-top: 5px; }
       <th>Update Status / POD</th>
     </tr>
   </thead>
-  <tbody>
-    <!-- Orders populate here -->
-  </tbody>
+  <tbody></tbody>
 </table>
 
 <script>
-const authHeader = 'Basic ' + btoa('admin:yourStrongPassword'); // Replace with your credentials
+const authHeader = 'Basic ' + btoa('admin:yourStrongPassword'); // replace with your credentials
 
 async function loadOrders() {
   try {
@@ -84,19 +82,12 @@ async function assignDriver(ref) {
   try {
     const res = await fetch('/api/assign', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': authHeader
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
       body: JSON.stringify({ ref, driverId })
     });
     const data = await res.json();
-    if (data.success) {
-      alert(`Driver assigned: ${driverId}`);
-      loadOrders();
-    } else {
-      alert(data.error || 'Failed to assign driver.');
-    }
+    if (data.success) alert(`Driver assigned: ${driverId}`);
+    loadOrders();
   } catch (err) {
     console.error(err);
     alert('Failed to assign driver.');
@@ -104,29 +95,21 @@ async function assignDriver(ref) {
 }
 
 async function updateOrder(ref) {
-  const statusSelect = document.getElementById(`status-${ref}`);
-  const podPhotoInput = document.getElementById(`podPhoto-${ref}`);
-  const podSignatureInput = document.getElementById(`podSignature-${ref}`);
+  const status = document.getElementById(`status-${ref}`).value;
+  const podPhoto = document.getElementById(`podPhoto-${ref}`).files[0];
+  const podSignature = document.getElementById(`podSignature-${ref}`).files[0];
 
   const formData = new FormData();
   formData.append('ref', ref);
-  formData.append('status', statusSelect.value);
-  if (podPhotoInput.files[0]) formData.append('podPhoto', podPhotoInput.files[0]);
-  if (podSignatureInput.files[0]) formData.append('podSignature', podSignatureInput.files[0]);
+  formData.append('status', status);
+  if (podPhoto) formData.append('podPhoto', podPhoto);
+  if (podSignature) formData.append('podSignature', podSignature);
 
   try {
-    const res = await fetch('/api/status', {
-      method: 'POST',
-      headers: { 'Authorization': authHeader },
-      body: formData
-    });
+    const res = await fetch('/api/status', { method: 'POST', headers: { 'Authorization': authHeader }, body: formData });
     const data = await res.json();
-    if (data.success) {
-      alert('Order updated');
-      loadOrders();
-    } else {
-      alert(data.error || 'Failed to update order.');
-    }
+    if (data.success) alert('Order updated');
+    loadOrders();
   } catch (err) {
     console.error(err);
     alert('Failed to update order.');
