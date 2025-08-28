@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Valley Same-Day Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #fff8f0; color: #333; margin: 0; padding: 20px; }
+    h1 { color: #ff7f11; text-align: center; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
+    th { background: #ff7f11; color: white; }
+    button { padding: 5px 10px; background: #ff7f11; color: white; border: none; cursor: pointer; border-radius: 3px; }
+    button:hover { background: #e76a00; }
+  </style>
+</head>
+<body>
+  <h1>Courier Dashboard</h1>
+  <table id="orders-table">
+    <thead>
+      <tr>
+        <th>Tracking Ref</th>
+        <th>Customer</th>
+        <th>Status</th>
+        <th>POD Photo</th>
+        <th>Signature</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Orders will populate here -->
+    </tbody>
+  </table>
+
+  <script>
+    async function loadOrders() {
+      try {
+        const response = await fetch('/api/orders'); // new endpoint
+        const orders = await response.json();
+        const tbody = document.querySelector('#orders-table tbody');
+        tbody.innerHTML = '';
+
+        orders.forEach(order => {
+          const row = document.createElement('tr');
+
+          row.innerHTML = `
+            <td>${order.ref}</td>
+            <td>${order.name}</td>
+            <td>${order.deliveryStatus || 'Waiting'}</td>
+            <td>${order.podPhoto ? `<a href="${order.podPhoto}" target="_blank">View</a>` : ''}</td>
+            <td>${order.podSignature ? `<a href="${order.podSignature}" target="_blank">View</a>` : ''}</td>
+            <td>
+              <button onclick="assignDriver('${order.ref}')">Assign Driver</button>
+            </td>
+          `;
+
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        console.error('Failed to load orders', err);
+      }
+    }
+
+    async function assignDriver(ref) {
+      const driver = prompt('Enter driver name or ID:');
+      if (!driver) return;
+      try {
+        const res = await fetch(`/api/assign?ref=${ref}&driver=${driver}`, { method: 'POST' });
+        const data = await res.json();
+        alert(data.message);
+        loadOrders(); // refresh table
+      } catch (err) {
+        console.error(err);
+        alert('Failed to assign driver.');
+      }
+    }
+
+    loadOrders();
+  </script>
+</body>
+</html>
