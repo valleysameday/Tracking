@@ -1,0 +1,23 @@
+<form name="pod-upload" method="POST" data-netlify="true" enctype="multipart/form-data">
+  <h2>📦 Valley POD Upload</h2>
+
+  <label>Job Reference</label>
+  <input type="text" name="reference" required />
+
+  <label>Driver Name</label>
+  <input type="text" name="driver" required />
+
+  <label>Upload POD Photo</label>
+  <input type="file" name="pod-image" accept="image/*" required />
+
+  <label>Notes (optional)</label>
+  <textarea name="notes"></textarea>
+
+  <input type="hidden" name="timestamp" id="timestamp" />
+
+  <button type="submit">Submit POD</button>
+</form>
+
+<script>
+  document.getElementById("timestamp").value = new Date().toISOString();
+</script>
