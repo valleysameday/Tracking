@@ -36,6 +36,7 @@ select { margin-top: 5px; }
 </table>
 
 <script>
+const API_BASE = 'https://api.valleysamedaytracking.delivery';
 const authHeader = 'Basic ' + btoa('admin:Savana2010....'); // replace with your credentials
 
 let onlineDrivers = [];
@@ -43,8 +44,8 @@ let onlineDrivers = [];
 // Fetch online drivers from backend
 async function loadDrivers() {
   try {
-    const res = await fetch('/api/drivers', { headers: { 'Authorization': authHeader } });
-    onlineDrivers = await res.json(); // expects [{ id: "driver1", name: "John" }, ...]
+    const res = await fetch(`${API_BASE}/api/drivers`, { headers: { 'Authorization': authHeader } });
+    onlineDrivers = await res.json();
   } catch (err) {
     console.error('Failed to load drivers:', err);
     onlineDrivers = [];
@@ -53,10 +54,10 @@ async function loadDrivers() {
 
 // Load orders
 async function loadOrders() {
-  await loadDrivers(); // ensure drivers list is updated
+  await loadDrivers();
 
   try {
-    const res = await fetch('/api/orders', { headers: { 'Authorization': authHeader } });
+    const res = await fetch(`${API_BASE}/api/orders`, { headers: { 'Authorization': authHeader } });
     const orders = await res.json();
     const tbody = document.querySelector('#orders-table tbody');
     tbody.innerHTML = '';
@@ -64,7 +65,6 @@ async function loadOrders() {
     orders.forEach(order => {
       const row = document.createElement('tr');
 
-      // Driver dropdown
       let driverOptions = `<option value="">--Select Driver--</option>`;
       onlineDrivers.forEach(driver => {
         const selected = order.driverId === driver.id ? 'selected' : '';
@@ -105,13 +105,10 @@ async function loadOrders() {
 // Assign driver
 async function assignDriver(ref) {
   const driverId = document.getElementById(`driver-${ref}`).value;
-  if (!driverId) {
-    alert('Please select a driver');
-    return;
-  }
+  if (!driverId) return alert('Please select a driver');
 
   try {
-    const res = await fetch('/api/assign', {
+    const res = await fetch(`${API_BASE}/api/assign`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
       body: JSON.stringify({ ref, driverId })
@@ -138,7 +135,7 @@ async function updateOrder(ref) {
   if (podSignature) formData.append('podSignature', podSignature);
 
   try {
-    const res = await fetch('/api/status', { method: 'POST', headers: { 'Authorization': authHeader }, body: formData });
+    const res = await fetch(`${API_BASE}/api/status`, { method: 'POST', headers: { 'Authorization': authHeader }, body: formData });
     const data = await res.json();
     if (data.success) alert('Order updated successfully.');
     loadOrders();
