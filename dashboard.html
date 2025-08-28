@@ -12,7 +12,8 @@ th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
 th { background: #ff7f11; color: white; }
 button { padding: 5px 10px; background: #ff7f11; color: white; border: none; cursor: pointer; border-radius: 3px; }
 button:hover { background: #e76a00; }
-input[type="file"] { margin-top: 5px; }
+input[type="file"] { margin-top: 5px; display: block; }
+select { margin-top: 5px; }
 </style>
 </head>
 <body>
@@ -23,6 +24,7 @@ input[type="file"] { margin-top: 5px; }
       <th>Tracking Ref</th>
       <th>Customer</th>
       <th>Status</th>
+      <th>Driver</th>
       <th>POD Photo</th>
       <th>Signature</th>
       <th>Assign Driver</th>
@@ -35,6 +37,7 @@ input[type="file"] { margin-top: 5px; }
 <script>
 const authHeader = 'Basic ' + btoa('admin:yourStrongPassword'); // replace with your credentials
 
+// Load orders
 async function loadOrders() {
   try {
     const res = await fetch('/api/orders', { headers: { 'Authorization': authHeader } });
@@ -48,6 +51,7 @@ async function loadOrders() {
         <td>${order.ref}</td>
         <td>${order.name}</td>
         <td>${order.deliveryStatus || 'Waiting'}</td>
+        <td>${order.driverId || ''}</td>
         <td>${order.podPhoto ? `<a href="${order.podPhoto}" target="_blank">View</a>` : ''}</td>
         <td>${order.podSignature ? `<a href="${order.podSignature}" target="_blank">View</a>` : ''}</td>
         <td>
@@ -60,10 +64,8 @@ async function loadOrders() {
             <option value="Out for Delivery" ${order.deliveryStatus==='Out for Delivery'?'selected':''}>Out for Delivery</option>
             <option value="Delivered" ${order.deliveryStatus==='Delivered'?'selected':''}>Delivered</option>
           </select>
-          <br>
           <input type="file" id="podPhoto-${order.ref}" accept="image/*">
           <input type="file" id="podSignature-${order.ref}" accept="image/*">
-          <br>
           <button onclick="updateOrder('${order.ref}')">Update</button>
         </td>
       `;
@@ -75,6 +77,7 @@ async function loadOrders() {
   }
 }
 
+// Assign driver
 async function assignDriver(ref) {
   const driverId = prompt('Enter driver name or ID:');
   if (!driverId) return;
@@ -94,6 +97,7 @@ async function assignDriver(ref) {
   }
 }
 
+// Update status / POD
 async function updateOrder(ref) {
   const status = document.getElementById(`status-${ref}`).value;
   const podPhoto = document.getElementById(`podPhoto-${ref}`).files[0];
@@ -108,7 +112,7 @@ async function updateOrder(ref) {
   try {
     const res = await fetch('/api/status', { method: 'POST', headers: { 'Authorization': authHeader }, body: formData });
     const data = await res.json();
-    if (data.success) alert('Order updated');
+    if (data.success) alert('Order updated successfully.');
     loadOrders();
   } catch (err) {
     console.error(err);
@@ -116,6 +120,7 @@ async function updateOrder(ref) {
   }
 }
 
+// Initial load
 loadOrders();
 </script>
 </body>
