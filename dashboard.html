@@ -18,6 +18,7 @@ select { margin-top: 5px; }
 </head>
 <body>
 <h1>Courier Dashboard</h1>
+
 <table id="orders-table">
   <thead>
     <tr>
@@ -37,8 +38,23 @@ select { margin-top: 5px; }
 <script>
 const authHeader = 'Basic ' + btoa('admin:Savana2010....'); // replace with your credentials
 
+let onlineDrivers = [];
+
+// Fetch online drivers from backend
+async function loadDrivers() {
+  try {
+    const res = await fetch('/api/drivers', { headers: { 'Authorization': authHeader } });
+    onlineDrivers = await res.json(); // expects [{ id: "driver1", name: "John" }, ...]
+  } catch (err) {
+    console.error('Failed to load drivers:', err);
+    onlineDrivers = [];
+  }
+}
+
 // Load orders
 async function loadOrders() {
+  await loadDrivers(); // ensure drivers list is updated
+
   try {
     const res = await fetch('/api/orders', { headers: { 'Authorization': authHeader } });
     const orders = await res.json();
@@ -47,6 +63,14 @@ async function loadOrders() {
 
     orders.forEach(order => {
       const row = document.createElement('tr');
+
+      // Driver dropdown
+      let driverOptions = `<option value="">--Select Driver--</option>`;
+      onlineDrivers.forEach(driver => {
+        const selected = order.driverId === driver.id ? 'selected' : '';
+        driverOptions += `<option value="${driver.id}" ${selected}>${driver.name}</option>`;
+      });
+
       row.innerHTML = `
         <td>${order.ref}</td>
         <td>${order.name}</td>
@@ -55,6 +79,7 @@ async function loadOrders() {
         <td>${order.podPhoto ? `<a href="${order.podPhoto}" target="_blank">View</a>` : ''}</td>
         <td>${order.podSignature ? `<a href="${order.podSignature}" target="_blank">View</a>` : ''}</td>
         <td>
+          <select id="driver-${order.ref}">${driverOptions}</select>
           <button onclick="assignDriver('${order.ref}')">Assign</button>
         </td>
         <td>
@@ -79,8 +104,11 @@ async function loadOrders() {
 
 // Assign driver
 async function assignDriver(ref) {
-  const driverId = prompt('Enter driver name or ID:');
-  if (!driverId) return;
+  const driverId = document.getElementById(`driver-${ref}`).value;
+  if (!driverId) {
+    alert('Please select a driver');
+    return;
+  }
 
   try {
     const res = await fetch('/api/assign', {
