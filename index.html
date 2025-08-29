@@ -94,7 +94,6 @@
   <input type="text" id="refInput" placeholder="Enter your reference number" />
   <button onclick="trackDelivery()">Check Status</button>
 
-  <!-- Spinner -->
   <div class="spinner" id="loadingSpinner"></div>
 
   <div class="result" id="resultBox" style="display:none;">
@@ -110,49 +109,36 @@
       const spinner = document.getElementById("loadingSpinner");
       const resultBox = document.getElementById("resultBox");
 
-      // Show spinner + hide results while fetching
       spinner.style.display = "block";
       resultBox.style.display = "none";
 
-      const airtableURL = "https://airtable.com/appWfZWp6BO6RWVIU/shrGszcJN1gEvc591?format=json";
+      const apiURL = "/.netlify/functions/track?ref=" + encodeURIComponent(ref);
 
       try {
-        const response = await fetch(airtableURL);
+        const response = await fetch(apiURL);
+        if (!response.ok) throw new Error("Fetch failed");
+
         const data = await response.json();
 
-        const match = data.records.find(record => {
-          const fields = record.fields || {};
-          return fields.reference && fields.reference.toLowerCase() === ref;
-        });
+        document.getElementById("statusText").innerHTML = `
+          <strong>Status:</strong> ${data.status || "Unknown"}<br>
+          <strong>Driver:</strong> ${data.driver || "N/A"}<br>
+          <strong>Time:</strong> ${data.timestamp || "N/A"}<br>
+          <strong>Notes:</strong> ${data.notes || "None"}
+        `;
 
-        if (!match) {
-          document.getElementById("statusText").innerHTML = "<strong>Reference not found.</strong>";
-          document.getElementById("podImage").style.display = "none";
-          resultBox.style.display = "block";
+        if (data.imageURL) {
+          document.getElementById("podImage").src = data.imageURL;
+          document.getElementById("podImage").style.display = "block";
         } else {
-          const { status, driver, timestamp, notes, imageURL } = match.fields;
-
-          document.getElementById("statusText").innerHTML = `
-            <strong>Status:</strong> ${status || "Unknown"}<br>
-            <strong>Driver:</strong> ${driver || "N/A"}<br>
-            <strong>Time:</strong> ${timestamp || "N/A"}<br>
-            <strong>Notes:</strong> ${notes || "None"}
-          `;
-
-          if (imageURL) {
-            document.getElementById("podImage").src = imageURL;
-            document.getElementById("podImage").style.display = "block";
-          } else {
-            document.getElementById("podImage").style.display = "none";
-          }
-
-          resultBox.style.display = "block";
+          document.getElementById("podImage").style.display = "none";
         }
+
+        resultBox.style.display = "block";
       } catch (err) {
         console.error(err);
         alert("Error fetching delivery status.");
       } finally {
-        // Hide spinner after fetching
         spinner.style.display = "none";
       }
     }
