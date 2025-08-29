@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Valley Same-Day Tracking</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fff8f3;
+      color: #333;
+      padding: 2rem;
+      max-width: 600px;
+      margin: auto;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    header img {
+      max-width: 120px;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      color: #e85d04;
+      text-align: center;
+      margin: 0;
+      font-size: 1.8rem;
+    }
+    input, button {
+      padding: 0.8rem;
+      font-size: 1rem;
+      margin-top: 1rem;
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+    input:focus {
+      outline: none;
+      border-color: #e85d04;
+      box-shadow: 0 0 4px rgba(232, 93, 4, 0.4);
+    }
+    button {
+      background-color: #e85d04;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s ease-in-out;
+    }
+    button:hover {
+      background-color: #d35400;
+    }
+    .spinner {
+      margin: 1rem auto;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #e85d04;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      display: none;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .result {
+      margin-top: 2rem;
+      padding: 1.2rem;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    .result strong {
+      color: #e85d04;
+    }
+    img {
+      margin-top: 1rem;
+      max-width: 100%;
+      border-radius: 8px;
+      border: 1px solid #eee;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="logo.png" alt="Valley Same-Day Logo" />
+    <h1>Track Your Delivery</h1>
+  </header>
+
+  <input type="text" id="refInput" placeholder="Enter your reference number" />
+  <button onclick="trackDelivery()">Check Status</button>
+
+  <!-- Spinner -->
+  <div class="spinner" id="loadingSpinner"></div>
+
+  <div class="result" id="resultBox" style="display:none;">
+    <p id="statusText"></p>
+    <img id="podImage" src="" alt="Proof of Delivery" style="display:none;" />
+  </div>
+
+  <script>
+    async function trackDelivery() {
+      const ref = document.getElementById("refInput").value.trim().toLowerCase();
+      if (!ref) return alert("Please enter a reference number.");
+
+      const spinner = document.getElementById("loadingSpinner");
+      const resultBox = document.getElementById("resultBox");
+
+      // Show spinner + hide results while fetching
+      spinner.style.display = "block";
+      resultBox.style.display = "none";
+
+      const airtableURL = "https://airtable.com/appWfZWp6BO6RWVIU/shrGszcJN1gEvc591?format=json";
+
+      try {
+        const response = await fetch(airtableURL);
+        const data = await response.json();
+
+        const match = data.records.find(record => {
+          const fields = record.fields || {};
+          return fields.reference && fields.reference.toLowerCase() === ref;
+        });
+
+        if (!match) {
+          document.getElementById("statusText").innerHTML = "<strong>Reference not found.</strong>";
+          document.getElementById("podImage").style.display = "none";
+          resultBox.style.display = "block";
+        } else {
+          const { status, driver, timestamp, notes, imageURL } = match.fields;
+
+          document.getElementById("statusText").innerHTML = `
+            <strong>Status:</strong> ${status || "Unknown"}<br>
+            <strong>Driver:</strong> ${driver || "N/A"}<br>
+            <strong>Time:</strong> ${timestamp || "N/A"}<br>
+            <strong>Notes:</strong> ${notes || "None"}
+          `;
+
+          if (imageURL) {
+            document.getElementById("podImage").src = imageURL;
+            document.getElementById("podImage").style.display = "block";
+          } else {
+            document.getElementById("podImage").style.display = "none";
+          }
+
+          resultBox.style.display = "block";
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error fetching delivery status.");
+      } finally {
+        // Hide spinner after fetching
+        spinner.style.display = "none";
+      }
+    }
+  </script>
+</body>
+</html>
