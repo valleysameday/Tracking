@@ -14,7 +14,7 @@ exports.handler = async function(event) {
   try {
     const response = await fetch(airtableURL, {
       headers: {
-        Authorization: "Bearer patMh4H0Bh6q3fyCB.f4f012759b13d687183896569605a25f31a4594786202f242153b0856be8f23d",
+        Authorization: "Bearer patlxxUoEWAggd4vy.e3c7c1f804e8f595d3ec21514c1cd89de528d6a9bd8c72b53483ae0681022f25",
         "Content-Type": "application/json"
       }
     });
