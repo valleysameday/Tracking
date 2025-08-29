@@ -83,6 +83,18 @@
       margin-top: 4px;
     }
 
+    .success-box {
+      display: none;
+      margin-top: 15px;
+      padding: 12px;
+      background-color: #e6fff2;
+      border: 1px solid #00b37a;
+      border-radius: 8px;
+      color: #006644;
+      font-weight: bold;
+      text-align: center;
+    }
+
     ul {
       list-style: none;
       padding: 0;
@@ -110,7 +122,7 @@
 
 <div class="container">
   <img src="valley.logo.webp" alt="Valley Same-Day Logo" class="logo" />
-  <form name="pod-upload" method="POST" data-netlify="true" enctype="multipart/form-data" action="/thank-you">
+  <form name="pod-upload" method="POST" data-netlify="true" enctype="multipart/form-data" id="podForm">
     <h2>📦 Valley POD Upload</h2>
 
     <label>Job Reference</label>
@@ -131,12 +143,39 @@
     <button type="submit">Submit POD</button>
   </form>
 
+  <div class="success-box" id="podSuccess">✅ POD submitted successfully. Thanks, driver!</div>
+
   <h3>🧾 Recent Deliveries</h3>
   <div id="deliveryList">Enter your name above to load recent jobs...</div>
 </div>
 
 <script>
   document.getElementById("timestamp").value = new Date().toISOString();
+
+  const form = document.getElementById("podForm");
+  const successBox = document.getElementById("podSuccess");
+
+  form.addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    const formData = new FormData(form);
+
+    fetch("/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams([...formData]).toString()
+    })
+    .then(() => {
+      successBox.style.display = "block";
+      form.reset();
+      document.getElementById("timestamp").value = new Date().toISOString();
+    })
+    .catch((error) => {
+      console.error("Form submission error:", error);
+      successBox.innerHTML = "❌ Something went wrong. Try again.";
+      successBox.style.display = "block";
+    });
+  });
 
   async function loadDriverJobs() {
     const driverName = document.getElementById("driverInput").value.trim().toLowerCase();
