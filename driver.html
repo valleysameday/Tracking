@@ -122,7 +122,7 @@
 
 <div class="container">
   <img src="valley.logo.webp" alt="Valley Same-Day Logo" class="logo" />
-  <form name="pod-upload" method="POST" data-netlify="true" enctype="multipart/form-data" id="podForm">
+  <form method="POST" action="https://hook.eu2.make.com/dpjtj3ns77jv87qsb4v91qnedx9i5pu7" enctype="multipart/form-data" id="podForm">
     <h2>📦 Valley POD Upload</h2>
 
     <label>Job Reference</label>
@@ -160,10 +160,9 @@
 
     const formData = new FormData(form);
 
-    fetch("/", {
+    fetch(form.action, {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams([...formData]).toString()
+      body: formData
     })
     .then(() => {
       successBox.style.display = "block";
