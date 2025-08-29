@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Valley Same-Day POD Upload</title>
+  <title>Valley Same-Day Driver Dashboard</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -34,7 +34,7 @@
       max-width: 150px;
     }
 
-    h2 {
+    h2, h3 {
       color: #ff7f11;
       text-align: center;
       margin-bottom: 20px;
@@ -76,12 +76,40 @@
     button:hover {
       background-color: #e76a00;
     }
+
+    .note {
+      font-size: 0.85em;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      background: #fff8f0;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 10px;
+      margin-bottom: 10px;
+      font-size: 0.95em;
+    }
+
+    li strong {
+      color: #ff7f11;
+    }
+
+    #deliveryList {
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <img src="logo.png" alt="Valley Same-Day Logo" class="logo" />
+  <img src="valley.logo.webp" alt="Valley Same-Day Logo" class="logo" />
   <form name="pod-upload" method="POST" data-netlify="true" enctype="multipart/form-data" action="/thank-you">
     <h2>📦 Valley POD Upload</h2>
 
@@ -89,10 +117,11 @@
     <input type="text" name="reference" placeholder="Enter Job Reference" required />
 
     <label>Driver Name</label>
-    <input type="text" name="driver" placeholder="Enter Driver Name" required />
+    <input type="text" name="driver" id="driverInput" placeholder="Enter Driver Name" required />
 
     <label>Upload POD Photo</label>
-    <input type="file" name="pod-image" accept="image/*" required />
+    <input type="file" name="pod-image" accept="image/*" capture="environment" required />
+    <div class="note">Tap to open camera (mobile only)</div>
 
     <label>Notes (optional)</label>
     <textarea name="notes" rows="4" placeholder="Any notes..."></textarea>
@@ -101,10 +130,52 @@
 
     <button type="submit">Submit POD</button>
   </form>
+
+  <h3>🧾 Recent Deliveries</h3>
+  <div id="deliveryList">Enter your name above to load recent jobs...</div>
 </div>
 
 <script>
   document.getElementById("timestamp").value = new Date().toISOString();
+
+  async function loadDriverJobs() {
+    const driverName = document.getElementById("driverInput").value.trim().toLowerCase();
+    if (!driverName) {
+      document.getElementById("deliveryList").innerHTML = "<p>Enter your name above to load recent jobs...</p>";
+      return;
+    }
+
+    const airtableURL = "https://airtable.com/appWfZWp6BO6RWVIU/shrGszcJN1gEvc591?format=json";
+
+    try {
+      const response = await fetch(airtableURL);
+      const data = await response.json();
+
+      let jobs = data.records.filter(record => {
+        const fields = record.fields || {};
+        return fields.driver && fields.driver.toLowerCase() === driverName;
+      });
+
+      if (jobs.length === 0) {
+        document.getElementById("deliveryList").innerHTML = "<p>No jobs found for this driver.</p>";
+        return;
+      }
+
+      jobs = jobs.sort((a, b) => new Date(b.fields.timestamp) - new Date(a.fields.timestamp)).slice(0, 5);
+
+      const list = jobs.map(job => {
+        const { reference, status, timestamp } = job.fields;
+        return `<li><strong>${reference}</strong><br>Status: ${status || "Unknown"}<br>Time: ${timestamp || "N/A"}</li>`;
+      }).join("");
+
+      document.getElementById("deliveryList").innerHTML = `<ul>${list}</ul>`;
+    } catch (err) {
+      console.error(err);
+      document.getElementById("deliveryList").innerHTML = "<p>Error loading jobs.</p>";
+    }
+  }
+
+  document.getElementById("driverInput").addEventListener("input", loadDriverJobs);
 </script>
 
 </body>
