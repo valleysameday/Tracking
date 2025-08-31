@@ -1,53 +1,54 @@
-const fetch = require("node-fetch");
+import fetch from "node-fetch";
 
-exports.handler = async (event) => {
-  const { reference, driver, notes, timestamp, podImage } = JSON.parse(event.body);
+export const handler = async (event) => {
+  console.log("🔹 Incoming POD submission event:", event.body);
 
-  const baseId = process.env.AIRTABLE_API;
-  const tableName = "Jobs";
-  const url = `https://api.airtable.com/v0/${baseId}/${tableName}`;
-  const headers = {
-    Authorization: `Bearer ${process.env.AIRTABLE_PAT}`,
-    "Content-Type": "application/json"
+  let data;
+  try {
+    data = JSON.parse(event.body);
+    console.log("📋 Parsed JSON data:", data);
+  } catch (err) {
+    console.error("❌ Failed to parse JSON:", err);
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "Invalid JSON", details: err.message })
+    };
+  }
+
+  const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
+  const BASE_ID = "appfqc5gFS9XFw6Yx";
+  const TABLE_NAME = "Jobs";
+
+  const body = {
+    fields: {
+      Reference: data.reference,
+      Driver: data.driver,
+      Notes: data.notes,
+      Timestamp: data.timestamp
+    }
   };
 
+  console.log("🔹 Prepared Airtable request body:", body);
+
   try {
-    // Step 1: Find the job by Reference
-    const searchUrl = `${url}?filterByFormula=SEARCH("${reference}", {Reference})`;
-    const searchRes = await fetch(searchUrl, { headers });
-    const searchData = await searchRes.json();
-
-    if (!searchData.records || searchData.records.length === 0) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ error: "Job not found" })
-      };
-    }
-
-    const jobId = searchData.records[0].id;
-
-    // Step 2: Patch the job record with POD data
-    const updateRes = await fetch(`${url}/${jobId}`, {
-      method: "PATCH",
-      headers,
-      body: JSON.stringify({
-        fields: {
-          "Driver": driver,
-          "Notes": notes,
-          "POD Timestamp": timestamp,
-          "POD Submitted": true,
-          "POD Image": podImage ? [{ url: podImage }] : []
-        }
-      })
+    const res = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
     });
 
-    const updateData = await updateRes.json();
+    const result = await res.json();
+    console.log("📦 Airtable response:", result, "| Status:", res.status);
 
     return {
-      statusCode: 200,
-      body: JSON.stringify({ success: true, updated: updateData })
+      statusCode: res.ok ? 200 : 500,
+      body: JSON.stringify(result)
     };
   } catch (err) {
+    console.error("❌ Error submitting to Airtable:", err);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: "Failed to submit POD", details: err.message })
