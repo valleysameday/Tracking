@@ -27,7 +27,7 @@ export const handler = async () => {
 
     // Map to simplified structure for dropdown + preview
     const jobs = data.records.map((r) => ({
-      ref: r.fields.Ref,
+      reference: r.fields.Reference,
       name: r.fields.Name || "",
       pickup: r.fields.Pickup || "",
       delivery: r.fields.Delivery || "",
