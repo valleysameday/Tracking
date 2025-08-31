@@ -1,11 +1,10 @@
-// netlify/functions/get-job-references.js
 import fetch from "node-fetch";
 
 export const handler = async () => {
   try {
-    const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;patSOLurekm3LyLai.adaf40d3e6fefd6553e01a6be6620c64a6c21031b965864025f04a8d3e1fa198
-    const BASE_ID = "appfqc5gFS9XFw6Yx"; // your base ID
-    const TABLE_NAME = "Jobs";           // your table name
+    const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
+    const BASE_ID = "appfqc5gFS9XFw6Yx";
+    const TABLE_NAME = "Jobs";
 
     const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
 
@@ -25,15 +24,21 @@ export const handler = async () => {
     const data = await response.json();
     console.log(`✅ Retrieved ${data.records.length} records`);
 
-    // Map to simplified structure for dropdown + preview
-    const jobs = data.records.map((r) => ({
-      reference: r.fields.Reference,
-      name: r.fields.Name || "",
-      pickup: r.fields.Pickup || "",
-      delivery: r.fields.Delivery || "",
-      vehicle: r.fields.Vehicle || "",
-      status: r.fields.Status || "",
-    }));
+    const jobs = data.records.map((r) => {
+      const recordId = r.id;
+      const fallbackRef = `VAL-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${recordId.slice(-4)}`;
+
+      return {
+        reference: r.fields.Reference || fallbackRef,
+        name: r.fields.Name || "",
+        pickup: r.fields.Pickup || "",
+        delivery: r.fields.Delivery || "",
+        vehicle: r.fields.Vehicle || "",
+        status: r.fields.Status || "",
+      };
+    });
+
+    console.log("📋 Mapped references:", jobs.map(j => j.reference));
 
     return {
       statusCode: 200,
