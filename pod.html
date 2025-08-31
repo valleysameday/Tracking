@@ -112,7 +112,7 @@
 
 <div class="container">
   <img src="valley.logo.webp" alt="Valley Same-Day Logo" class="logo" />
-  <form method="POST" action="https://hook.eu2.make.com/oijtqk2llxhx7i7tyddjsof2lovqu7mz" enctype="multipart/form-data" id="podForm">
+  <form id="podForm" enctype="multipart/form-data">
     <h2>📦 Valley POD Upload</h2>
 
     <label>Job Reference</label>
@@ -152,20 +152,17 @@ const spinner = document.getElementById("spinner");
 const referenceInput = document.getElementById("referenceInput");
 const jobPreview = document.getElementById("jobPreview");
 
-let jobsData = []; // keep if you want to show job previews
+let jobsData = []; // optional if you want preview
 
 console.log("📝 Manual input enabled for Job Reference");
 
 referenceInput.addEventListener("input", () => {
   const ref = referenceInput.value.trim();
-  console.log("🔹 Reference input changed:", ref);
-
   const job = jobsData.find(j => j.reference === ref);
 
   if (!job) {
     jobPreview.style.display = "none";
     jobPreview.innerHTML = `<em>No job preview available for this reference.</em>`;
-    console.log("⚠️ No matching job found in jobsData for reference:", ref);
     return;
   }
 
@@ -178,37 +175,49 @@ referenceInput.addEventListener("input", () => {
     <strong>Vehicle:</strong> ${job.vehicle ?? "N/A"}<br>
     <strong>Status:</strong> ${job.status ?? "N/A"}
   `;
-  console.log("✅ Displayed job preview for reference:", ref);
 });
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   spinner.style.display = "block";
   successBox.style.display = "none";
-
-  const formData = new FormData(form);
   timestampInput.value = new Date().toISOString();
 
-  console.log("🔹 Submitting POD form...");
-  for (let pair of formData.entries()) console.log("   ", pair[0], ":", pair[1]);
+  const formData = new FormData(form);
+
+  // Convert to JSON to send to serverless function
+  const jsonData = {
+    reference: formData.get("reference"),
+    driver: formData.get("driver"),
+    notes: formData.get("notes"),
+    timestamp: formData.get("timestamp")
+  };
+
+  console.log("🔹 Submitting POD to Airtable via serverless function:", jsonData);
 
   try {
-    const res = await fetch(form.action, { method: "POST", body: formData });
+    const res = await fetch("/.netlify/functions/submit-pod", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(jsonData)
+    });
+
+    const result = await res.json();
+    console.log("📦 Airtable response:", result);
+
     if (res.ok) {
-      console.log("✅ POD submitted successfully");
       successBox.style.display = "block";
       form.reset();
       jobPreview.style.display = "none";
       jobPreview.innerHTML = "";
       timestampInput.value = new Date().toISOString();
     } else {
-      const text = await res.text();
-      console.error("❌ POD submission failed:", text);
+      console.error("❌ Failed to submit POD:", result);
       successBox.textContent = "❌ Something went wrong. Try again.";
       successBox.style.display = "block";
     }
   } catch (err) {
-    console.error("❌ Form submission error:", err);
+    console.error("❌ Error submitting POD:", err);
     successBox.textContent = "❌ Something went wrong. Try again.";
     successBox.style.display = "block";
   } finally {
