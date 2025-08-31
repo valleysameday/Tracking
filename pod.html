@@ -46,7 +46,7 @@
     font-weight: bold;
   }
 
-  input[type="text"], select, textarea, input[type="file"] {
+  input[type="text"], textarea, input[type="file"] {
     width: 100%;
     padding: 10px;
     border: 1px solid #ccc;
@@ -116,9 +116,7 @@
     <h2>📦 Valley POD Upload</h2>
 
     <label>Job Reference</label>
-    <select name="reference" id="referenceDropdown" required>
-      <option value="">-- Loading References --</option>
-    </select>
+    <input type="text" name="reference" id="referenceInput" placeholder="Enter Job Reference" required />
 
     <div id="jobPreview"></div>
 
@@ -151,24 +149,19 @@ timestampInput.value = new Date().toISOString();
 const form = document.getElementById("podForm");
 const successBox = document.getElementById("podSuccess");
 const spinner = document.getElementById("spinner");
-const referenceInput = document.getElementById("referenceDropdown"); // now manual input
+const referenceInput = document.getElementById("referenceInput");
 const jobPreview = document.getElementById("jobPreview");
 
-let jobsData = []; // still used if you want to preview existing jobs
+let jobsData = []; // keep if you want to show job previews
 
-// Manual input, so we won't fetch references
-console.log("📝 Using manual input for Job Reference");
-
-// If you want to preview jobs for a known reference, you can still keep jobsData
-// You could populate jobsData from an API if needed
-// Example: jobsData = [{ reference: "VAL123", name: "John Doe", pickup: "Depot", delivery: "Customer", vehicle: "Van", status: "Delivered" }]
+console.log("📝 Manual input enabled for Job Reference");
 
 referenceInput.addEventListener("input", () => {
   const ref = referenceInput.value.trim();
   console.log("🔹 Reference input changed:", ref);
-  
+
   const job = jobsData.find(j => j.reference === ref);
-  
+
   if (!job) {
     jobPreview.style.display = "none";
     jobPreview.innerHTML = `<em>No job preview available for this reference.</em>`;
@@ -197,10 +190,7 @@ form.addEventListener("submit", async (e) => {
   timestampInput.value = new Date().toISOString();
 
   console.log("🔹 Submitting POD form...");
-  console.log("📋 Form data values:");
-  for (let pair of formData.entries()) {
-    console.log("   ", pair[0], ":", pair[1]);
-  }
+  for (let pair of formData.entries()) console.log("   ", pair[0], ":", pair[1]);
 
   try {
     const res = await fetch(form.action, { method: "POST", body: formData });
