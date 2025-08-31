@@ -1,131 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Valley Same-Day Driver Dashboard</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #fff8f0;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valley Same-Day Driver Dashboard</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #fff8f0;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+  }
 
-    .container {
-      background-color: #ffffff;
-      border: 2px solid #ff7f11;
-      border-radius: 10px;
-      padding: 30px;
-      margin: 40px 20px;
-      max-width: 500px;
-      width: 100%;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      position: relative;
-    }
+  .container {
+    background-color: #ffffff;
+    border: 2px solid #ff7f11;
+    border-radius: 10px;
+    padding: 30px;
+    margin: 40px 20px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    position: relative;
+  }
 
-    .container img.logo {
-      display: block;
-      margin: 0 auto 20px auto;
-      max-width: 150px;
-    }
+  .container img.logo {
+    display: block;
+    margin: 0 auto 20px auto;
+    max-width: 150px;
+  }
 
-    h2, h3 {
-      color: #ff7f11;
-      text-align: center;
-      margin-bottom: 20px;
-    }
+  h2, h3 {
+    color: #ff7f11;
+    text-align: center;
+    margin-bottom: 20px;
+  }
 
-    label {
-      display: block;
-      margin: 10px 0 5px 0;
-      font-weight: bold;
-    }
+  label {
+    display: block;
+    margin: 10px 0 5px 0;
+    font-weight: bold;
+  }
 
-    input[type="text"],
-    textarea,
-    input[type="file"],
-    select {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      box-sizing: border-box;
-    }
+  input[type="text"], select, textarea, input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+  }
 
-    textarea { resize: vertical; }
+  textarea { resize: vertical; }
 
-    button {
-      background-color: #ff7f11;
-      color: white;
-      font-weight: bold;
-      padding: 12px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      width: 100%;
-      margin-top: 15px;
-      font-size: 1em;
-    }
+  button {
+    background-color: #ff7f11;
+    color: white;
+    font-weight: bold;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 15px;
+    font-size: 1em;
+  }
 
-    button:hover { background-color: #e76a00; }
+  button:hover { background-color: #e76a00; }
 
-    .note { font-size: 0.85em; color: #666; margin-top: 4px; }
+  .note { font-size: 0.85em; color: #666; margin-top: 4px; }
 
-    .success-box {
-      display: none;
-      margin-top: 15px;
-      padding: 12px;
-      background-color: #e6fff2;
-      border: 1px solid #00b37a;
-      border-radius: 8px;
-      color: #006644;
-      font-weight: bold;
-      text-align: center;
-    }
+  .success-box {
+    display: none;
+    margin-top: 15px;
+    padding: 12px;
+    background-color: #e6fff2;
+    border: 1px solid #00b37a;
+    border-radius: 8px;
+    color: #006644;
+    font-weight: bold;
+    text-align: center;
+  }
 
-    ul { list-style: none; padding: 0; }
+  #jobPreview {
+    margin: 15px 0;
+    padding: 12px;
+    background: #fff8f0;
+    border: 1px solid #ff7f11;
+    border-radius: 8px;
+    display: none;
+  }
 
-    li {
-      background: #fff8f0;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      padding: 10px;
-      margin-bottom: 10px;
-      font-size: 0.95em;
-    }
+  .spinner {
+    display: none;
+    margin: 10px auto 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 4px solid #f3f3f3;
+    border-top-color: #ff7f11;
+    animation: spin 0.8s linear infinite;
+  }
 
-    li strong { color: #ff7f11; }
-
-    #deliveryList { margin-top: 20px; }
-
-    #jobPreview {
-      margin-top: 15px;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      background: #fff8f0;
-      font-size: 0.9em;
-      display: none;
-    }
-
-    .spinner {
-      display: none;
-      margin: 10px auto;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      border: 4px solid #f3f3f3;
-      border-top-color: #ff7f11;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
 </head>
 <body>
 
@@ -136,7 +117,7 @@
 
     <label>Job Reference</label>
     <select name="reference" id="referenceDropdown" required>
-      <option value="">-- Select Job Reference --</option>
+      <option value="">-- Loading References --</option>
     </select>
 
     <div id="jobPreview"></div>
@@ -164,45 +145,55 @@
 </div>
 
 <script>
-  const timestampInput = document.getElementById("timestamp");
-  timestampInput.value = new Date().toISOString();
+const timestampInput = document.getElementById("timestamp");
+timestampInput.value = new Date().toISOString();
 
-  const form = document.getElementById("podForm");
-  const successBox = document.getElementById("podSuccess");
-  const spinner = document.getElementById("spinner");
-  const referenceDropdown = document.getElementById("referenceDropdown");
-  const jobPreview = document.getElementById("jobPreview");
+const form = document.getElementById("podForm");
+const successBox = document.getElementById("podSuccess");
+const spinner = document.getElementById("spinner");
+const referenceDropdown = document.getElementById("referenceDropdown");
+const jobPreview = document.getElementById("jobPreview");
 
-  let jobsData = [];
+let jobsData = [];
 
-  // Load job references (mocked example, replace with your API)
-  async function loadReferences() {
-    try {
-      const res = await fetch("/.netlify/functions/get-job-references"); // replace with your endpoint
-      const data = await res.json();
-      jobsData = data;
+async function loadReferences() {
+  try {
+    console.log("🔹 Fetching job references...");
+    spinner.style.display = "block";
+    const res = await fetch("/.netlify/functions/get-job-references");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    console.log(`✅ Retrieved ${data.length} job references`);
 
-      data.forEach(job => {
-        const opt = document.createElement("option");
-        opt.value = job.reference;
-        opt.textContent = job.reference;
-        referenceDropdown.appendChild(opt);
-      });
-    } catch (err) {
-      console.error("❌ Failed to load job references", err);
-    }
+    jobsData = data;
+    referenceDropdown.innerHTML = '<option value="">-- Select Job Reference --</option>';
+
+    data.forEach(job => {
+      console.log("➕ Adding reference:", job.reference);
+      const opt = document.createElement("option");
+      opt.value = job.reference;
+      opt.textContent = job.reference;
+      referenceDropdown.appendChild(opt);
+    });
+  } catch (err) {
+    console.error("❌ Failed to load job references:", err);
+    referenceDropdown.innerHTML = '<option value="">-- Failed to load --</option>';
+  } finally {
+    spinner.style.display = "none";
   }
-  loadReferences();
+}
 
-  referenceDropdown.addEventListener("change", () => {
-    const ref = referenceDropdown.value;
-    const job = jobsData.find(j => j.reference === ref);
-    if (!job) {
-      jobPreview.style.display = "none";
-      jobPreview.innerHTML = "";
-      return;
-    }
-    if (job && typeof job === "object") {
+loadReferences();
+
+referenceDropdown.addEventListener("change", () => {
+  const ref = referenceDropdown.value;
+  const job = jobsData.find(j => j.reference === ref);
+  if (!job) {
+    jobPreview.style.display = "none";
+    jobPreview.innerHTML = "";
+    return;
+  }
+
   jobPreview.style.display = "block";
   jobPreview.innerHTML = `
     <strong>Reference:</strong> ${job.reference ?? "N/A"}<br>
@@ -212,38 +203,39 @@
     <strong>Vehicle:</strong> ${job.vehicle ?? "N/A"}<br>
     <strong>Status:</strong> ${job.status ?? "N/A"}
   `;
-} else {
-  jobPreview.style.display = "none";
-  jobPreview.innerHTML = `<em>No job selected or data unavailable.</em>`;
-    }
+});
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    spinner.style.display = "block";
-    successBox.style.display = "none";
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  spinner.style.display = "block";
+  successBox.style.display = "none";
 
-    const formData = new FormData(form);
+  const formData = new FormData(form);
+  timestampInput.value = new Date().toISOString();
 
-    try {
-      const res = await fetch(form.action, { method: "POST", body: formData });
-      if (res.ok) {
-        successBox.style.display = "block";
-        form.reset();
-        timestampInput.value = new Date().toISOString();
-        jobPreview.style.display = "none";
-        jobPreview.innerHTML = "";
-      } else {
-        successBox.textContent = "❌ Something went wrong. Try again.";
-        successBox.style.display = "block";
-      }
-    } catch (err) {
-      console.error("❌ Form submission error:", err);
+  try {
+    console.log("🔹 Submitting POD...");
+    const res = await fetch(form.action, { method: "POST", body: formData });
+    if (res.ok) {
+      console.log("✅ POD submitted successfully");
+      successBox.style.display = "block";
+      form.reset();
+      jobPreview.style.display = "none";
+      jobPreview.innerHTML = "";
+      timestampInput.value = new Date().toISOString();
+    } else {
+      console.error("❌ POD submission failed", await res.text());
       successBox.textContent = "❌ Something went wrong. Try again.";
       successBox.style.display = "block";
-    } finally {
-      spinner.style.display = "none";
     }
-  });
+  } catch (err) {
+    console.error("❌ Form submission error:", err);
+    successBox.textContent = "❌ Something went wrong. Try again.";
+    successBox.style.display = "block";
+  } finally {
+    spinner.style.display = "none";
+  }
+});
 </script>
 
 </body>
