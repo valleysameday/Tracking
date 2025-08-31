@@ -46,7 +46,7 @@
     font-weight: bold;
   }
 
-  input[type="text"], textarea, input[type="file"] {
+  input[type="text"], textarea {
     width: 100%;
     padding: 10px;
     border: 1px solid #ccc;
@@ -112,7 +112,7 @@
 
 <div class="container">
   <img src="valley.logo.webp" alt="Valley Same-Day Logo" class="logo" />
-  <form id="podForm" enctype="multipart/form-data">
+  <form id="podForm">
     <h2>📦 Valley POD Upload</h2>
 
     <label>Job Reference</label>
@@ -122,10 +122,6 @@
 
     <label>Driver Name</label>
     <input type="text" name="driver" id="driverInput" placeholder="Enter Driver Name" required />
-
-    <label>Upload POD Photo</label>
-    <input type="file" name="pod-image" accept="image/*" capture="environment" required />
-    <div class="note">Tap to open camera (mobile only)</div>
 
     <label>Notes (optional)</label>
     <textarea name="notes" rows="4" placeholder="Any notes..."></textarea>
@@ -152,7 +148,7 @@ const spinner = document.getElementById("spinner");
 const referenceInput = document.getElementById("referenceInput");
 const jobPreview = document.getElementById("jobPreview");
 
-let jobsData = []; // optional if you want preview
+let jobsData = []; // optional for preview
 
 console.log("📝 Manual input enabled for Job Reference");
 
@@ -183,14 +179,11 @@ form.addEventListener("submit", async (e) => {
   successBox.style.display = "none";
   timestampInput.value = new Date().toISOString();
 
-  const formData = new FormData(form);
-
-  // Convert to JSON to send to serverless function
   const jsonData = {
-    reference: formData.get("reference"),
-    driver: formData.get("driver"),
-    notes: formData.get("notes"),
-    timestamp: formData.get("timestamp")
+    reference: referenceInput.value,
+    driver: document.getElementById("driverInput").value,
+    notes: document.querySelector("textarea[name='notes']").value,
+    timestamp: timestampInput.value
   };
 
   console.log("🔹 Submitting POD to Airtable via serverless function:", jsonData);
