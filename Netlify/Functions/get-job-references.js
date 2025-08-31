@@ -3,7 +3,7 @@ import fetch from "node-fetch";
 
 export const handler = async () => {
   try {
-    const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY; // your Airtable PAT
+    const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;patSOLurekm3LyLai.adaf40d3e6fefd6553e01a6be6620c64a6c21031b965864025f04a8d3e1fa198
     const BASE_ID = "appfqc5gFS9XFw6Yx"; // your base ID
     const TABLE_NAME = "Jobs";           // your table name
 
