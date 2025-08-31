@@ -19,39 +19,53 @@ export const handler = async (event) => {
   const BASE_ID = "appfqc5gFS9XFw6Yx";
   const TABLE_NAME = "Jobs";
 
-  const body = {
+  // Step 1: Find the record with matching Reference
+  const searchUrl = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=Reference="${data.reference}"`;
+
+  const searchRes = await fetch(searchUrl, {
+    headers: {
+      Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+      "Content-Type": "application/json"
+    }
+  });
+
+  const searchData = await searchRes.json();
+
+  if (!searchRes.ok || !searchData.records.length) {
+    console.error("❌ No matching job found for reference:", data.reference);
+    return {
+      statusCode: 404,
+      body: JSON.stringify({ error: "Job not found for reference", reference: data.reference })
+    };
+  }
+
+  const recordId = searchData.records[0].id;
+  console.log("🔍 Found matching job record:", recordId);
+
+  // Step 2: Update the record with POD info
+  const updateBody = {
     fields: {
-      Reference: data.reference,
       Driver: data.driver,
       Notes: data.notes,
-      Timestamp: data.timestamp
+      Timestamp: data.timestamp,
+      "POD Submitted": true
     }
   };
 
-  console.log("🔹 Prepared Airtable request body:", body);
+  const updateRes = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${recordId}`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(updateBody)
+  });
 
-  try {
-    const res = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${AIRTABLE_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body)
-    });
+  const updateResult = await updateRes.json();
+  console.log("📦 Airtable update response:", updateResult, "| Status:", updateRes.status);
 
-    const result = await res.json();
-    console.log("📦 Airtable response:", result, "| Status:", res.status);
-
-    return {
-      statusCode: res.ok ? 200 : 500,
-      body: JSON.stringify(result)
-    };
-  } catch (err) {
-    console.error("❌ Error submitting to Airtable:", err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Failed to submit POD", details: err.message })
-    };
-  }
+  return {
+    statusCode: updateRes.ok ? 200 : 500,
+    body: JSON.stringify(updateResult)
+  };
 };
