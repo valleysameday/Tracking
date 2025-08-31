@@ -78,20 +78,23 @@
     .driver-card.offline {
       border-left-color: red;
     }
+    .pod-image {
+      max-width: 100%;
+      margin-top: 10px;
+      border-radius: 6px;
+    }
   </style>
 </head>
 <body>
   <div class="dashboard">
-    <h1>📊 Valley Same-Day Dashboard</h1>
+    <h1>📦 Valley Same-Day Dashboard</h1>
 
-    <!-- Summary -->
     <section class="summary">
       <div>Total Jobs: <span id="jobCount">0</span></div>
       <div>Total Revenue: £<span id="revenueTotal">0.00</span></div>
       <div>Active Drivers: <span id="driverCount">0</span></div>
     </section>
 
-    <!-- Filters -->
     <section class="filters">
       <input type="text" id="searchRef" placeholder="Search by Reference" />
       <select id="statusFilter">
@@ -101,21 +104,14 @@
       </select>
     </section>
 
-    <!-- Job List -->
     <h2>Jobs</h2>
-    <section id="jobList">
-      <!-- Jobs will be rendered here -->
-    </section>
+    <section id="jobList"></section>
 
-    <!-- Drivers -->
     <h2>Drivers</h2>
-    <section id="driverList">
-      <!-- Drivers will be rendered here -->
-    </section>
+    <section id="driverList"></section>
   </div>
 
   <script>
-    // Elements
     const jobList = document.getElementById("jobList");
     const jobCount = document.getElementById("jobCount");
     const revenueTotal = document.getElementById("revenueTotal");
@@ -124,13 +120,11 @@
     const searchRef = document.getElementById("searchRef");
     const statusFilter = document.getElementById("statusFilter");
 
-    // Mock drivers (replace later with Airtable or Shipday API)
     const drivers = [
       { name: "Sam Driver", phone: "07712345678", status: "online" },
       { name: "John Doe", phone: "07798765432", status: "offline" },
     ];
 
-    // Render Drivers
     function renderDrivers() {
       driverList.innerHTML = "";
       drivers.forEach(d => {
@@ -146,7 +140,6 @@
       driverCount.innerText = drivers.filter(d => d.status === "online").length;
     }
 
-    // Render Jobs
     function renderJobs(jobs) {
       let filtered = jobs;
 
@@ -166,8 +159,13 @@
         div.className = "job-card";
         div.innerHTML = `
           <h3>${job.ref || "No Ref"} - ${job.customer || "Unknown"}</h3>
-          <div class="meta">Price: £${Number(job.price || 0).toFixed(2)}</div>
+          <div class="meta">📍 ${job.pickup} → ${job.delivery}</div>
+          <div class="meta">🚚 ${job.vehicle} | 👤 ${job.driver || "Unassigned"}</div>
+          <div class="meta">💰 £${Number(job.price || 0).toFixed(2)}</div>
+          <div class="meta">🕒 ${job.timestamp || "N/A"}</div>
           <div class="status ${job.status}">${job.status}</div>
+          ${job.podImage ? `<img src="${job.podImage}" class="pod-image" alt="POD Image" />` : ""}
+          ${job.notes ? `<p><strong>Notes:</strong> ${job.notes}</p>` : ""}
         `;
         jobList.appendChild(div);
       });
@@ -177,23 +175,33 @@
       revenueTotal.innerText = revenue.toFixed(2);
     }
 
-    // Load Jobs from Netlify → Airtable
     async function loadJobs() {
       try {
         const res = await fetch("/.netlify/functions/get-all-jobs");
-        const { jobs } = await res.json();
-        window.allJobs = jobs; // store globally for filtering
+        const { records } = await res.json();
+        const jobs = records.map(r => ({
+          ref: r.fields["Reference"],
+          customer: r.fields["Name"],
+          pickup: r.fields["Pickup"],
+          delivery: r.fields["Delivery"],
+          vehicle: r.fields["Vehicle"],
+          driver: r.fields["Driver"],
+          status: r.fields["Status"],
+          price: parseFloat(r.fields["Quoted Price"]) || 0,
+          timestamp: r.fields["Timestamp"],
+          notes: r.fields["Notes"],
+          podImage: r.fields["POD Image"]?.[0]?.url || null
+        }));
+        window.allJobs = jobs;
         renderJobs(jobs);
       } catch (err) {
         console.error("Failed to fetch jobs:", err);
       }
     }
 
-    // Event Listeners
     searchRef.addEventListener("input", () => renderJobs(window.allJobs || []));
     statusFilter.addEventListener("change", () => renderJobs(window.allJobs || []));
 
-    // Init
     renderDrivers();
     loadJobs();
   </script>
