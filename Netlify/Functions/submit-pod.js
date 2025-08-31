@@ -1,7 +1,7 @@
 import fetch from "node-fetch";
 
 export const handler = async (event) => {
-  console.log("🔹 Incoming POD submission event:", event.body);
+  console.log("🚀 submit-pod function triggered");
 
   let data;
   try {
@@ -19,8 +19,11 @@ export const handler = async (event) => {
   const BASE_ID = "appfqc5gFS9XFw6Yx";
   const TABLE_NAME = "Jobs";
 
-  // Step 1: Find the record with matching Reference
-  const searchUrl = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?filterByFormula=Reference="${data.reference}"`;
+  // ✅ Step 1: Find the record with matching Reference
+  const filterFormula = `filterByFormula=${encodeURIComponent(`{Reference} = "${data.reference}"`)}`;
+  const searchUrl = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}?${filterFormula}`;
+
+  console.log("🔍 Searching Airtable for reference:", data.reference);
 
   const searchRes = await fetch(searchUrl, {
     headers: {
@@ -40,9 +43,9 @@ export const handler = async (event) => {
   }
 
   const recordId = searchData.records[0].id;
-  console.log("🔍 Found matching job record:", recordId);
+  console.log("✅ Found matching job record:", recordId);
 
-  // Step 2: Update the record with POD info
+  // ✅ Step 2: Update the record with POD info
   const updateBody = {
     fields: {
       Driver: data.driver,
