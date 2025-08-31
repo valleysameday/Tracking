@@ -151,46 +151,28 @@ timestampInput.value = new Date().toISOString();
 const form = document.getElementById("podForm");
 const successBox = document.getElementById("podSuccess");
 const spinner = document.getElementById("spinner");
-const referenceDropdown = document.getElementById("referenceDropdown");
+const referenceInput = document.getElementById("referenceDropdown"); // now manual input
 const jobPreview = document.getElementById("jobPreview");
 
-let jobsData = [];
+let jobsData = []; // still used if you want to preview existing jobs
 
-async function loadReferences() {
-  try {
-    console.log("🔹 Fetching job references...");
-    spinner.style.display = "block";
-    const res = await fetch("/.netlify/functions/get-job-references");
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    console.log(`✅ Retrieved ${data.length} job references`);
+// Manual input, so we won't fetch references
+console.log("📝 Using manual input for Job Reference");
 
-    jobsData = data;
-    referenceDropdown.innerHTML = '<option value="">-- Select Job Reference --</option>';
+// If you want to preview jobs for a known reference, you can still keep jobsData
+// You could populate jobsData from an API if needed
+// Example: jobsData = [{ reference: "VAL123", name: "John Doe", pickup: "Depot", delivery: "Customer", vehicle: "Van", status: "Delivered" }]
 
-    data.forEach(job => {
-      console.log("➕ Adding reference:", job.reference);
-      const opt = document.createElement("option");
-      opt.value = job.reference;
-      opt.textContent = job.reference;
-      referenceDropdown.appendChild(opt);
-    });
-  } catch (err) {
-    console.error("❌ Failed to load job references:", err);
-    referenceDropdown.innerHTML = '<option value="">-- Failed to load --</option>';
-  } finally {
-    spinner.style.display = "none";
-  }
-}
-
-loadReferences();
-
-referenceDropdown.addEventListener("change", () => {
-  const ref = referenceDropdown.value;
+referenceInput.addEventListener("input", () => {
+  const ref = referenceInput.value.trim();
+  console.log("🔹 Reference input changed:", ref);
+  
   const job = jobsData.find(j => j.reference === ref);
+  
   if (!job) {
     jobPreview.style.display = "none";
-    jobPreview.innerHTML = "";
+    jobPreview.innerHTML = `<em>No job preview available for this reference.</em>`;
+    console.log("⚠️ No matching job found in jobsData for reference:", ref);
     return;
   }
 
@@ -203,6 +185,7 @@ referenceDropdown.addEventListener("change", () => {
     <strong>Vehicle:</strong> ${job.vehicle ?? "N/A"}<br>
     <strong>Status:</strong> ${job.status ?? "N/A"}
   `;
+  console.log("✅ Displayed job preview for reference:", ref);
 });
 
 form.addEventListener("submit", async (e) => {
@@ -213,8 +196,13 @@ form.addEventListener("submit", async (e) => {
   const formData = new FormData(form);
   timestampInput.value = new Date().toISOString();
 
+  console.log("🔹 Submitting POD form...");
+  console.log("📋 Form data values:");
+  for (let pair of formData.entries()) {
+    console.log("   ", pair[0], ":", pair[1]);
+  }
+
   try {
-    console.log("🔹 Submitting POD...");
     const res = await fetch(form.action, { method: "POST", body: formData });
     if (res.ok) {
       console.log("✅ POD submitted successfully");
@@ -224,7 +212,8 @@ form.addEventListener("submit", async (e) => {
       jobPreview.innerHTML = "";
       timestampInput.value = new Date().toISOString();
     } else {
-      console.error("❌ POD submission failed", await res.text());
+      const text = await res.text();
+      console.error("❌ POD submission failed:", text);
       successBox.textContent = "❌ Something went wrong. Try again.";
       successBox.style.display = "block";
     }
