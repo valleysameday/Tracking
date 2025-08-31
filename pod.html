@@ -202,15 +202,20 @@
       jobPreview.innerHTML = "";
       return;
     }
-    jobPreview.style.display = "block";
-    jobPreview.innerHTML = `
-      <strong>Name:</strong> ${job.name || "N/A"}<br>
-      <strong>Pickup:</strong> ${job.pickup || "N/A"}<br>
-      <strong>Delivery:</strong> ${job.delivery || "N/A"}<br>
-      <strong>Vehicle:</strong> ${job.vehicle || "N/A"}<br>
-      <strong>Status:</strong> ${job.status || "N/A"}
-    `;
-  });
+    if (job && typeof job === "object") {
+  jobPreview.style.display = "block";
+  jobPreview.innerHTML = `
+    <strong>Reference:</strong> ${job.reference ?? "N/A"}<br>
+    <strong>Name:</strong> ${job.name ?? "N/A"}<br>
+    <strong>Pickup:</strong> ${job.pickup ?? "N/A"}<br>
+    <strong>Delivery:</strong> ${job.delivery ?? "N/A"}<br>
+    <strong>Vehicle:</strong> ${job.vehicle ?? "N/A"}<br>
+    <strong>Status:</strong> ${job.status ?? "N/A"}
+  `;
+} else {
+  jobPreview.style.display = "none";
+  jobPreview.innerHTML = `<em>No job selected or data unavailable.</em>`;
+    }
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
